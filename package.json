@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "create-dist-package": "bash scripts/create-dist-package.sh" 
   },
   "dependencies": {
     "react": "19.2.0",
