@@ -1,4 +1,3 @@
-# .github/workflows/02-preview-deploy.yml
 name: 02 - Preview Deploy
 on:
   workflow_run:
@@ -28,7 +27,7 @@ jobs:
       - name: Deploy
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            NAME="nextjs-pr-${{ github.event.pull_request.number }}"
+            NAME="os-nextjs-standalone-automatization-pr-${{ github.event.pull_request.number }}"
             echo "Deploying PR preview: $NAME"
 
             aws lambda create-function \
@@ -41,7 +40,7 @@ jobs:
               --memory-size 1024 \
               --environment Variables={STAGE=preview} || true
           else
-            NAME="nextjs-dev"
+            NAME="os-nextjs-standalone-automatization-dev"
             echo "Deploying to dev: $NAME"
           fi
 
