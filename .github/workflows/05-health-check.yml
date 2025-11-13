@@ -1,0 +1,26 @@
+name: 05 - Health Check
+on:
+  workflow_run:
+    workflows: ["02 - Preview Deploy", "03 - Production Deploy"]
+    types: [completed]
+
+jobs:
+  check:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get URL
+        run: |
+          if [[ "${{ github.event.workflow_run.event }}" == "pull_request" ]]; then
+            NAME="os-nextjs-standalone-automatization-pr-${{ github.event.pull_request.number }}"
+          elif [[ "${{ github.event.workflow_run.workflow_id }}" == *"preview"* ]]; then
+            NAME="os-nextjs-standalone-automatization-dev"
+          else
+            NAME="os-nextjs-standalone-automatization-prod"
+          fi
+          URL=$(aws lambda get-function-url-config --function-name $NAME --query 'FunctionUrl' --output text --region eu-central-1)
+          echo "URL=$URL" >> $GITHUB_ENV
+
+      - name: Health Check
+        run: |
+          curl -f "${{ env.URL }}/api/health" && echo "HEALTH OK"
