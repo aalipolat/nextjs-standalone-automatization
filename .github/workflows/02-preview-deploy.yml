@@ -1,0 +1,69 @@
+# .github/workflows/02-preview-deploy.yml
+name: 02 - Preview Deploy
+on:
+  workflow_run:
+    workflows: ["01 - Build"]
+    types: [completed]
+    branches: [develop]
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: preview
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: lambda-latest-${{ github.event.workflow_run.head_sha }}
+          path: .
+
+      - name: Configure AWS (dev)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_DEV_IAM_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_DEV_IAM_SECRET }}
+          aws-region: eu-central-1
+
+      - name: Deploy
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            NAME="nextjs-pr-${{ github.event.pull_request.number }}"
+            echo "Deploying PR preview: $NAME"
+
+            aws lambda create-function \
+              --function-name $NAME \
+              --runtime nodejs20.x \
+              --handler server.lambdaHandler \
+              --role ${{ secrets.AWS_LAMBDA_ROLE_ARN }} \
+              --zip-file fileb://dist.zip \
+              --timeout 15 \
+              --memory-size 1024 \
+              --environment Variables={STAGE=preview} || true
+          else
+            NAME="nextjs-dev"
+            echo "Deploying to dev: $NAME"
+          fi
+
+          aws lambda update-function-code \
+            --function-name $NAME \
+            --zip-file fileb://dist.zip
+
+          aws lambda create-function-url-config \
+            --function-name $NAME \
+            --auth-type NONE || true
+
+          URL=$(aws lambda get-function-url-config --function-name $NAME --query 'FunctionUrl' --output text)
+          echo "URL=$URL" >> $GITHUB_ENV
+
+      - name: PR Comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Preview Deploy Successful!\n\n**URL:** ${{ env.URL }}\n**Health:** ${{ env.URL }}/api/health\n\nTest: \`curl ${{ env.URL }}/api/health\``
+            })
