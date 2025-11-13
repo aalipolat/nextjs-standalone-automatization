@@ -2,10 +2,9 @@ name: 01 - Build
 on:
   push:
     branches: [develop, main]
+    tags: [ 'v*' ]
   pull_request:
     types: [opened, synchronize, reopened]
-  push:
-    tags: [ 'v*' ]
 
 jobs:
   build:
