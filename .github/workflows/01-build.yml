@@ -12,14 +12,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set Version
-        id: version
-        run: |
-          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
-      - name: Set Artifact Name
-        run: echo "ARTIFACT_NAME=dist-${{ steps.version.outputs.version }}" >> $GITHUB_ENV
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -37,6 +29,6 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}
+          name: standalone-dist
           path: dist
           retention-days: 7
