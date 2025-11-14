@@ -12,7 +12,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Version
+      - name: Set Version
         id: version
         run: |
           echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT

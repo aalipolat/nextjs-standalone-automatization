@@ -11,15 +11,10 @@ jobs:
     environment: production
 
     steps:
-      - name: Version
-        id: version
-        run: |
-          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
       - name: Set Artifact Name
-        run: echo "ARTIFACT_NAME=dist-${{ steps.version.outputs.version }}" >> $GITHUB_ENV
+        run: echo "ARTIFACT_NAME=dist-${{ github.event.workflow_run.head_tag }}" >> $GITHUB_ENV
 
-      - name: Download build artifact
+      - name: Download Build Artifact
         uses: actions/download-artifact@v4
         with:
           name: ${{ env.ARTIFACT_NAME }}
@@ -32,8 +27,8 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Upload artifact to EC2
-        run: scp ${{ env.ARTIFACT_NAME }} ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/
+      - name: Upload Artifact to EC2
+        run: scp -r ${{ env.ARTIFACT_NAME }} ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/
 
       - name: Deploy on EC2
         run: |
