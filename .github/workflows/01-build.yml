@@ -1,10 +1,7 @@
 name: 01 - Build
 on:
   push:
-    branches: [develop, main]
     tags: [ 'v*' ]
-  pull_request:
-    types: [opened, synchronize, reopened]
 
 jobs:
   build:
@@ -13,7 +10,7 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       sha: ${{ steps.version.outputs.sha }}
     steps:
-      - name: Checkout source repo
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -21,12 +18,11 @@ jobs:
       - name: Version & SHA
         id: version
         run: |
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          else
-            echo "version=latest" >> $GITHUB_OUTPUT
-          fi
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Set Artifact Name
+        run: echo "ARTIFACT_NAME=dist-${{ steps.version.outputs.version }}-${{ steps.version.outputs.sha }}" >> $GITHUB_ENV
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -36,21 +32,21 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run build script & create dist package
         run: |
           npm run build
           npm run create-dist-package
-      
-      - name: Install zip
+
+      - name: Install zip tool
         run: sudo apt-get update -q && sudo apt-get install -y zip
 
-      - name: Create dist.zip
-        run: zip -r dist.zip dist
+      - name: Create ZIP
+        run: zip -r $ARTIFACT_NAME.zip dist
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: lambda-${{ steps.version.outputs.version }}-${{ steps.version.outputs.sha }}.zip
-          path: dist.zip
+          name: $ARTIFACT_NAME
+          path: $ARTIFACT_NAME.zip
           retention-days: 7

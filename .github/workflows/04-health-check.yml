@@ -1,0 +1,23 @@
+name: 04 - Health Check
+on:
+  workflow_run:
+    workflows: ["03 - Runtime Config"]
+    types: [completed]
+
+jobs:
+  healthcheck:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    env:
+      APP_URL: ${{ secrets.PROD_URL }}
+
+    steps:
+      - name: Check app health
+        run: |
+          echo "Checking app health at $APP_URL..."
+          if curl -fs $APP_URL >/dev/null; then
+            echo "✅ App is up and running at $APP_URL"
+          else
+            echo "❌ App is not responding at $APP_URL"
+            exit 1
+          fi

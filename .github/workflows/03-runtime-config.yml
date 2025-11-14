@@ -1,0 +1,23 @@
+name: 03 - Runtime Config
+on:
+  workflow_run:
+    workflows: ["02 - Deploy"]
+    types: [completed]
+
+jobs:
+  runtime:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      EC2_USER: ubuntu
+      EC2_APP_PATH: /home/ubuntu/app
+
+    steps:
+      - name: Apply runtime config on EC2
+        run: |
+          ssh ${{ env.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          echo "STAGE=production" > /home/ubuntu/app/.env
+          echo "VERSION=${{ github.event.workflow_run.outputs.version }}" >> /home/ubuntu/app/.env
+          pm2 restart next-app || true
+          EOF

@@ -1,0 +1,42 @@
+name: 02 - Deploy
+on:
+  workflow_run:
+    workflows: ["01 - Build"]
+    types: [completed]
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Set Artifact Name from previous workflow
+        run: |
+          echo "ARTIFACT_NAME=dist-${{ github.event.workflow_run.outputs.version }}-${{ github.event.workflow_run.outputs.sha }}" >> $GITHUB_ENV
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: .
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Upload artifact to EC2
+        run: scp ${{ env.ARTIFACT_NAME }}.zip ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/
+
+      - name: Deploy on EC2
+        run: |
+          ssh ubuntu@${{ secrets.EC2_HOST }} << EOF
+          cd /home/ubuntu/app
+          unzip -o $ARTIFACT_NAME.zip -d dist
+          pm2 delete next-app || true
+          pm2 start npm --name "next-app" -- start
+          pm2 save
+          EOF
