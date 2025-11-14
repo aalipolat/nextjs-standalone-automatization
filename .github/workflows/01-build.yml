@@ -12,14 +12,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Version & SHA
+      - name: Version
         id: version
         run: |
           echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Set Artifact Name
-        run: echo "ARTIFACT_NAME=dist-${{ steps.version.outputs.version }}-${{ steps.version.outputs.sha }}" >> $GITHUB_ENV
+        run: echo "ARTIFACT_NAME=dist-${{ steps.version.outputs.version }}" >> $GITHUB_ENV
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -41,7 +40,5 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: dist
           retention-days: 7
-    
     outputs:
       version: ${{ steps.version.outputs.version }}
-      sha: ${{ steps.version.outputs.sha }}

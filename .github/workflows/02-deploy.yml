@@ -11,9 +11,13 @@ jobs:
     environment: production
 
     steps:
-      - name: Set Artifact Name from previous workflow
+      - name: Version
+        id: version
         run: |
-          echo "ARTIFACT_NAME=dist-${{ github.event.workflow_run.outputs.version }}-${{ github.event.workflow_run.outputs.sha }}" >> $GITHUB_ENV
+          echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Set Artifact Name
+        run: echo "ARTIFACT_NAME=dist-${{ steps.version.outputs.version }}" >> $GITHUB_ENV
 
       - name: Download build artifact
         uses: actions/download-artifact@v4
