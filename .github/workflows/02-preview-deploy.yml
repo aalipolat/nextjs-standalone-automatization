@@ -38,7 +38,6 @@ jobs:
               --zip-file fileb://dist.zip \
               --timeout 15 \
               --memory-size 1024 \
-              --environment Variables={STAGE=preview} || true
           else
             NAME="os-nextjs-standalone-automatization-dev"
             echo "Deploying to dev: $NAME"
