@@ -35,7 +35,7 @@ jobs:
         run: |
           ssh ubuntu@${{ secrets.EC2_HOST }} << EOF
           cd /home/ubuntu/app
-          unzip -o $ARTIFACT_NAME.zip -d dist
+          unzip -o ${{ env.ARTIFACT_NAME }}.zip -d dist
           pm2 delete next-app || true
           pm2 start npm --name "next-app" -- start
           pm2 save
