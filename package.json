@@ -1,13 +1,13 @@
 {
   "name": "nextjs-standalone-automatization",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "create-dist-package": "bash scripts/create-dist-package.sh" 
+    "create-dist-package": "bash scripts/create-dist-package.sh"
   },
   "dependencies": {
     "react": "19.2.0",
