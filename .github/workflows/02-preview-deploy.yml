@@ -32,7 +32,7 @@ jobs:
 
             aws lambda create-function \
               --function-name $NAME \
-              --runtime nodejs20.x \
+              --runtime nodejs22.x \
               --handler server.lambdaHandler \
               --role ${{ secrets.AWS_LAMBDA_ROLE_ARN }} \
               --zip-file fileb://dist.zip \
