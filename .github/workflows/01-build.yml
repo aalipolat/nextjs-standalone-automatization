@@ -6,9 +6,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
-      sha: ${{ steps.version.outputs.sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,3 +41,7 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: dist
           retention-days: 7
+    
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      sha: ${{ steps.version.outputs.sha }}
