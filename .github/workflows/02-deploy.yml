@@ -29,13 +29,14 @@ jobs:
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
       - name: Upload artifact to EC2
-        run: scp ${{ env.ARTIFACT_NAME }}.zip ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/
+        run: scp ${{ env.ARTIFACT_NAME }} ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/
 
       - name: Deploy on EC2
         run: |
           ssh ubuntu@${{ secrets.EC2_HOST }} << EOF
           cd /home/ubuntu/app
-          unzip -o ${{ env.ARTIFACT_NAME }}.zip -d dist
+          rm -rf dist
+          mv ${{ env.ARTIFACT_NAME }} dist
           pm2 delete next-app || true
           pm2 start npm --name "next-app" -- start
           pm2 save
