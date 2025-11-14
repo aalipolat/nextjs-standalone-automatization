@@ -17,7 +17,11 @@ jobs:
       - name: Apply runtime config on EC2
         run: |
           ssh ${{ env.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-          echo "STAGE=production" > /home/ubuntu/app/.env
+          echo "STAGE=prod" > /home/ubuntu/app/.env
           echo "VERSION=${{ github.event.workflow_run.outputs.version }}" >> /home/ubuntu/app/.env
+          echo "NODE_ENV=production" >> /home/ubuntu/app/.env
+          echo "HOSTNAME=${{ secrets.APP_ENV_HOSTNAME }}" >> /home/ubuntu/app/.env
+          echo "PORT=${{ secrets.APP_ENV_PORT }}" >> /home/ubuntu/app/.env
+          echo "APP_URL=${{ secrets.APP_ENV_APP_URL }}" >> /home/ubuntu/app/.env
           pm2 restart next-app || true
           EOF
