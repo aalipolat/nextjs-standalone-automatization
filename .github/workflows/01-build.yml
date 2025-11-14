@@ -38,15 +38,9 @@ jobs:
           npm run build
           npm run create-dist-package
 
-      - name: Install zip tool
-        run: sudo apt-get update -q && sudo apt-get install -y zip
-
-      - name: Create ZIP
-        run: zip -r $ARTIFACT_NAME.zip dist
-
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: $ARTIFACT_NAME
-          path: $ARTIFACT_NAME.zip
+          name: $ARTIFACT_NAME.zip
+          path: dist
           retention-days: 7
