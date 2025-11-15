@@ -38,3 +38,5 @@ jobs:
           tag_name: ${{ github.ref_name }}
           files: |
             standalone-dist.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
