@@ -11,15 +11,18 @@ jobs:
     environment: production
 
     steps:
-      - name: Set Artifact Name
-        run: echo "ARTIFACT_NAME=standalone-dist" >> $GITHUB_ENV
-
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v4
+      - name: Download release asset
+        uses: dsaltares/fetch-gh-release-asset@v1
         with:
-          name: ${{ env.ARTIFACT_NAME }}
-          path: .
-          run-id: ${{ github.event.workflow_run.id }}
+          version: "tag:${{ github.event.workflow_run.head_branch }}"
+          file: "standalone-dist.zip"
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Install unzip
+        run: sudo apt-get update -q && sudo apt-get install -y unzip
+
+      - name: Unzip
+        run: unzip standalone-dist.zip
 
       - name: Setup SSH
         run: |
@@ -29,14 +32,14 @@ jobs:
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
       - name: Upload Artifact to EC2
-        run: scp -r ${{ env.ARTIFACT_NAME }} ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/
+        run: scp -r dist ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/
 
       - name: Deploy on EC2
         run: |
           ssh ubuntu@${{ secrets.EC2_HOST }} << EOF
           cd /home/ubuntu/app
           rm -rf dist
-          mv ${{ env.ARTIFACT_NAME }} dist
+          mv dist dist
           pm2 delete next-app || true
           pm2 start npm --name "next-app" -- start
           pm2 save

@@ -25,10 +25,16 @@ jobs:
         run: |
           npm run build
           npm run create-dist-package
+      
+      - name: Install zip
+        run: sudo apt-get update -q && sudo apt-get install -y zip
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+      - name: Create standalone-dist.zip
+        run: zip -r standalone-dist.zip dist
+
+      - name: Create or update GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: standalone-dist
-          path: dist
-          retention-days: 7
+          tag_name: ${{ github.ref_name }}
+          files: |
+            standalone-dist.zip
