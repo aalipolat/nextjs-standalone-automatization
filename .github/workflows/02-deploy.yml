@@ -20,6 +20,8 @@ jobs:
       - name: Download release asset using GitHub CLI
         run: |
           gh release download ${{ github.ref_name }} --repo ${{ github.repository }} --pattern standalone-dist.zip
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           
       - name: Unzip
         run: unzip standalone-dist.zip
