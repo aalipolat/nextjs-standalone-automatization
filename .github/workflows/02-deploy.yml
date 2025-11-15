@@ -19,6 +19,7 @@ jobs:
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: .
+          run-id: ${{ github.event.workflow_run.id }}
 
       - name: Setup SSH
         run: |
